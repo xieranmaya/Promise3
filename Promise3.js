@@ -5,27 +5,31 @@ var Promise = (function() {
     self.status = 'pending'
 
     var resolve = function(value) {
-      if (self.status != 'pending') {
-        return
-      }
-      self.status = 'resolved'
-      self.data = value
+      setTimeout(function(){
+        if (self.status != 'pending') {
+          return
+        }
+        self.status = 'resolved'
+        self.data = value
 
-      for (var i = 0; i < self.callbacks.length; i++) {
-        self.callbacks[i].resolver(value)
-      }
+        for (var i = 0; i < self.callbacks.length; i++) {
+          self.callbacks[i].resolver(value)
+        }
+      })
     }
 
     var reject = function(reason) {
-      if (self.status != 'pending') {
-        return
-      }
-      self.status = 'rejected'
-      self.data = reason
+      setTimeout(function(){
+        if (self.status != 'pending') {
+          return
+        }
+        self.status = 'rejected'
+        self.data = reason
 
-      for (var i = 0; i < self.callbacks.length; i++) {
-        self.callbacks[i].rejector(reason)
-      }
+        for (var i = 0; i < self.callbacks.length; i++) {
+          self.callbacks[i].rejector(reason)
+        }
+      })
     }
 
     setTimeout(function() {
@@ -33,9 +37,13 @@ var Promise = (function() {
     })
   }
 
+  function noop(){}
+
   Promise.prototype.isPromise = true
 
   Promise.prototype.then = function(resolver, rejector) {
+    resolver = resolver || noop
+    rejector = rejector || noop
     var self = this;
 
     if (self.status == 'resolved') {
@@ -43,12 +51,13 @@ var Promise = (function() {
         setTimeout(function() {
           try {
             var value = resolver(self.data)
-            if(value.isPromise) {
+            if (value && value.isPromise) {
               return value.then(resolve, reject)
             } else {
               return resolve(value)
             }
           } catch(e) {
+            console.error('catch',e)
             return reject(e)
           }
         })
@@ -60,12 +69,13 @@ var Promise = (function() {
         setTimeout(function() {
           try {
             var value = rejector(self.data)
-            if (value.isPromise) {
+            if (value && value.isPromise) {
               return value.then(resolve, reject)
             } else {
               return resolve(value)
             }
           } catch(e) {
+            console.error('catch',e)
             return reject(e)
           }
         })
@@ -78,24 +88,26 @@ var Promise = (function() {
           resolver: function(value) {
             try {
               var value = resolver(value)
-              if (value.isPromise) {
+              if (value && value.isPromise) {
                 return value.then(resolve, reject)
               } else {
                 return resolve(value)
               }
             } catch(e) {
+              console.error('catch',e)
               return reject(e)
             }
           },
           rejector: function(reason) {
             try {
               var value = rejector(reason)
-              if (value.isPromise) {
+              if (value && value.isPromise) {
                 return value.then(resolve, reject)
               } else {
                 return resolve(value)
               }
             } catch(e) {
+              console.error('catch',e)
               return reject(e)
             }
           }
