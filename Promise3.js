@@ -43,15 +43,14 @@ var Promise = (function() {
         setTimeout(function() {
           try {
             var value = resolver(self.data)
-            if(value.isPromise){
-              value.then(resolve, reject)
+            if(value.isPromise) {
+              return value.then(resolve, reject)
             } else {
-              resolve(value)
+              return resolve(value)
             }
           } catch(e) {
-            reject(e)
+            return reject(e)
           }
-          resolve(resolver(self.data))
         })
       })
     }
@@ -82,10 +81,10 @@ var Promise = (function() {
               if (value.isPromise) {
                 return value.then(resolve, reject)
               } else {
-                resolve(value)
+                return resolve(value)
               }
             } catch(e) {
-              reject(e)
+              return reject(e)
             }
           },
           rejector: function(reason) {
@@ -94,46 +93,15 @@ var Promise = (function() {
               if (value.isPromise) {
                 return value.then(resolve, reject)
               } else {
-                resolve(value)
+                return resolve(value)
               }
             } catch(e) {
-              reject(e)
+              return reject(e)
             }
           }
         })
       })
     }
-
-    // if (self.status == 'pending') {
-    //   self.callbacks.push({
-    //     resolver: resolver || null,
-    //     rejector: rejector || null
-    //   })
-
-    //   return new Promise(function(resolve, reject) {
-    //     self.then(function(value) {
-    //       if (value.isPromise) {
-    //         value.then(function(value) {
-    //           resolve(value)
-    //         }, function(reason) {
-    //           reject(reason)
-    //         })
-    //       } else {
-    //         resolve(value)
-    //       }
-    //     }, function(reason) {
-    //       if (reason.isPromise) {
-    //         reason.then(function(value) {
-    //           resolve(value)
-    //         }, function(reason){
-    //           reject(reason)
-    //         })
-    //       } else {
-    //         reject(reason)
-    //       }
-    //     })
-    //   })
-    // }
   }
 
   Promise.prototype.done = function(onResolved) {
