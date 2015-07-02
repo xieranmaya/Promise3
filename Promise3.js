@@ -1,5 +1,11 @@
 var Promise = (function() {
   function Promise(callback) {
+    if (typeof callback != 'function') {
+      throw new TypeError('Promise resolver ' + callback + ' is not a function')
+      return
+    }
+    if (!(this instanceof Promise)) return new Promise(callback)
+
     var self = this
     self.callbacks = []
     self.status = 'pending'
