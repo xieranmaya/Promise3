@@ -38,9 +38,7 @@ var Promise = (function() {
       })
     }
 
-    setTimeout(function() {
-      callback(resolve, reject)
-    })
+    callback(resolve, reject)
   }
 
   function noop(){}
@@ -192,6 +190,15 @@ var Promise = (function() {
     return new Promise(function(resolve, reject) {
       reject(reason)
     })
+  }
+
+  Promise.defer = function() {
+    var dfd = {}
+    dfd.promise = new Promise(function(resolve, reject) {
+      dfd.resolve = resolve
+      dfd.reject = reject
+    })
+    return dfd
   }
 
   return Promise;
