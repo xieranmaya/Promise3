@@ -120,10 +120,6 @@ var Promise = (function() {
     }
   }
 
-  Promise.prototype.done = function(onResolved) {
-    return this.then(onResolved, null);
-  };
-
   Promise.prototype.catch = function(onRejected) {
     return this.then(null, onRejected);
   };
@@ -190,6 +186,10 @@ var Promise = (function() {
     return new Promise(function(resolve, reject) {
       reject(reason)
     })
+  }
+
+  Promise.done = function(){
+    return new Promise(function(){})
   }
 
   Promise.defer = function() {
