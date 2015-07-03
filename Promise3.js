@@ -47,7 +47,7 @@ var Promise = (function() {
 
   Promise.prototype.then = function(resolver, rejector) {
     resolver = resolver || noop
-    rejector = rejector || noop
+    rejector = rejector || function(r){throw r}
     var self = this;
 
     if (self.status == 'resolved') {
@@ -61,7 +61,7 @@ var Promise = (function() {
               return resolve(value)
             }
           } catch(e) {
-            console.error('catch',e)
+            //console.error('catch',e)
             return reject(e)
           }
         })
@@ -79,7 +79,7 @@ var Promise = (function() {
               return resolve(value)
             }
           } catch(e) {
-            console.error('catch',e)
+            //console.error('catch',e)
             return reject(e)
           }
         })
@@ -98,7 +98,7 @@ var Promise = (function() {
                 return resolve(value)
               }
             } catch(e) {
-              console.error('catch',e)
+              //console.error('catch',e)
               return reject(e)
             }
           },
@@ -111,7 +111,7 @@ var Promise = (function() {
                 return resolve(value)
               }
             } catch(e) {
-              console.error('catch',e)
+              //console.error('catch',e)
               return reject(e)
             }
           }
@@ -124,7 +124,7 @@ var Promise = (function() {
     return this.then(onResolved, null);
   };
 
-  Promise.prototype.catch = Promise.prototype.fail = function(onRejected) {
+  Promise.prototype.catch = function(onRejected) {
     return this.then(null, onRejected);
   };
 
