@@ -38,7 +38,11 @@ var Promise = (function() {
       })
     }
 
-    callback(resolve, reject)
+    try{
+      callback(resolve, reject)
+    } catch(e) {
+      reject(e)
+    }
   }
 
   function noop(){}
