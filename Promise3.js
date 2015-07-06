@@ -188,6 +188,10 @@ var Promise = (function() {
     })
   }
 
+  Promise.fcall = function(fn){
+    return Promise.resolve().then(fn)
+  }
+
   Promise.done = function(){
     return new Promise(function(){})
   }
