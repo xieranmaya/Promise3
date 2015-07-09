@@ -147,24 +147,20 @@ var Promise = (function() {
   Promise.all = function(promises) {
     return new Promise(function(resolve, reject) {
       var resolvedCounter = 0;
-      var rejectedCounter = 0;
       var promiseNum = promises.length;
       var resolvedValues = new Array(promiseNum);
       for (var i = 0; i < promiseNum; i++) {
-        (function() {
-          var index = i;
+        (function(i) {
           promises[i].then(function(value) {
             resolvedCounter++;
-            resolvedValues[index] = value;
+            resolvedValues[i] = value;
             if (resolvedCounter == promiseNum) {
-              resolve(resolvedValues);
+              return resolve(resolvedValues);
             }
-            return value;
           }, function(reason) {
-            rejectedCounter++;
-            return reason;
+            return reject(reason)
           });
-        })();
+        })(i);
       }
     });
   };
@@ -173,8 +169,9 @@ var Promise = (function() {
     return new Promise(function(resolve, reject) {
       for (var i = 0; i < promises.length; i++) {
         promises[i].then(function(value) {
-          resolve(value);
-          return value;
+          return resolve(value);
+        }, function(reason){
+          return reject(reason)
         });
       }
     });
