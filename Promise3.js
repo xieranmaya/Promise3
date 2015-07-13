@@ -124,6 +124,10 @@ var Promise = (function() {
     }
   }
 
+  Promise.prototype.valueOf = function() {
+    return this.data
+  }
+
   Promise.prototype.catch = function(onRejected) {
     return this.then(null, onRejected);
   };
