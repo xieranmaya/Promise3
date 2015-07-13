@@ -50,7 +50,7 @@ var Promise = (function() {
   Promise.prototype.isPromise = true
 
   Promise.prototype.then = function(resolver, rejector) {
-    resolver = resolver || noop
+    resolver = resolver || function(v){return v}
     rejector = rejector || function(r){throw r}
     var self = this;
 
