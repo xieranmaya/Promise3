@@ -200,13 +200,18 @@ var Promise = (function() {
     return new Promise(function(){})
   }
 
-  Promise.defer = function() {
+  Promise.deferred = Promise.defer = function() {
     var dfd = {}
     dfd.promise = new Promise(function(resolve, reject) {
       dfd.resolve = resolve
       dfd.reject = reject
     })
     return dfd
+  }
+  try {
+    module.exports = Promise
+  } catch(e) {
+
   }
 
   return Promise;
