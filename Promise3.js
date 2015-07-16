@@ -9,7 +9,7 @@ var Promise = (function() {
     self.callbacks = []
     self.status = 'pending'
 
-    var resolve = function(value) {
+    function resolve(value) {
       setTimeout(function(){
         if (self.status != 'pending') {
           return
@@ -23,7 +23,7 @@ var Promise = (function() {
       })
     }
 
-    var reject = function(reason) {
+    function reject(reason) {
       setTimeout(function(){
         if (self.status != 'pending') {
           return
@@ -208,6 +208,7 @@ var Promise = (function() {
     })
     return dfd
   }
+
   try {
     module.exports = Promise
   } catch(e) {
