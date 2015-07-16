@@ -49,8 +49,8 @@ var Promise = (function() {
   Promise.prototype.isPromise = true
 
   Promise.prototype.then = function(resolver, rejector) {
-    resolver = resolver || function(v){return v}
-    rejector = rejector || function(r){throw r}
+    resolver = typeof resolver === 'function' ? resolver : function(v){return v}
+    rejector = typeof rejector === 'function' ? rejector : function(r){throw r}
     var self = this;
 
     if (self.status == 'resolved') {
