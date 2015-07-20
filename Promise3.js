@@ -52,13 +52,16 @@ var Promise = (function() {
     resolver = typeof resolver === 'function' ? resolver : function(v){return v}
     rejector = typeof rejector === 'function' ? rejector : function(r){throw r}
     var self = this;
+    var promise2;
 
     if (self.status == 'resolved') {
-      return new Promise(function(resolve, reject) {
+      return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
             var value = resolver(self.data)
-            if (value && value.isPromise) {
+            if (promise2 === value) {
+              return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+            } else if (value && value.isPromise) {
               return value.then(resolve, reject)
             } else {
               return resolve(value)
@@ -72,11 +75,13 @@ var Promise = (function() {
     }
 
     if (self.status == 'rejected') {
-      return new Promise(function(resolve, reject) {
+      return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
             var value = rejector(self.data)
-            if (value && value.isPromise) {
+            if (promise2 === value) {
+              return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+            } else if (value && value.isPromise) {
               return value.then(resolve, reject)
             } else {
               return resolve(value)
@@ -90,12 +95,14 @@ var Promise = (function() {
     }
 
     if (self.status == 'pending') {
-      return new Promise(function(resolve, reject) {
+      return promise2 = new Promise(function(resolve, reject) {
         self.callbacks.push({
           resolver: function(value) {
             try {
               var value = resolver(value)
-              if (value && value.isPromise) {
+              if (promise2 === value) {
+                return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+              } else if (value && value.isPromise) {
                 return value.then(resolve, reject)
               } else {
                 return resolve(value)
@@ -108,7 +115,9 @@ var Promise = (function() {
           rejector: function(reason) {
             try {
               var value = rejector(reason)
-              if (value && value.isPromise) {
+              if (promise2 === value) {
+                return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+              } else if (value && value.isPromise) {
                 return value.then(resolve, reject)
               } else {
                 return resolve(value)
@@ -130,6 +139,22 @@ var Promise = (function() {
   Promise.prototype.catch = function(onRejected) {
     return this.then(null, onRejected);
   };
+
+  Promise.prototype.finally = function(fn) {
+    // 为什么这里可以呢，因为所有的then调用是一起的，但是这个then里调用fn又异步了一次，所以它总是最后调用的。
+    // 当然这里只能保证在已添加的函数里是最后一次，不过这也是必然。
+    function finFn(){
+      setTimeout(fn)
+    }
+    this.then(finFn, finFn)
+    return this
+  }
+
+  Promise.prototype.spread = function(fn) {
+    return this.then(function(values) {
+      return fn.apply(null, values)
+    })
+  }
 
   Promise.prototype.delay = function(duration) {
     return this.then(function(value) {
