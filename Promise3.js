@@ -156,12 +156,15 @@ var Promise = (function() {
   Promise.prototype.finally = function(fn) {
     // 为什么这里可以呢，因为所有的then调用是一起的，但是这个then里调用fn又异步了一次，所以它总是最后调用的。
     // 当然这里只能保证在已添加的函数里是最后一次，不过这也是必然。
-    // 不过看起来比其它的实现要简单以及容易理解的多
-    function finFn(){
+    // 不过看起来比其它的实现要简单以及容易理解的多。
+    // 貌似对finally的行为没有一个公认的定义，所以这个实现目前是跟Q保持一致，会返回一个新的Promise而不是原来那个。
+    return this.then(function(v){
       setTimeout(fn)
-    }
-    this.then(finFn, finFn)
-    return this
+      return v
+    }, function(r){
+      setTimeout(fn)
+      throw r
+    })
   }
 
   Promise.prototype.spread = function(fn, onRejected) {
