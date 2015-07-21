@@ -1,9 +1,9 @@
 var Promise = (function() {
-  function Promise(callback) {
-    if (typeof callback != 'function') {
-      throw new TypeError('Promise resolver ' + callback + ' is not a function')
+  function Promise(resolver) {
+    if (typeof resolver != 'function') {
+      throw new TypeError('Promise resolver ' + resolver + ' is not a function')
     }
-    if (!(this instanceof Promise)) return new Promise(callback)
+    if (!(this instanceof Promise)) return new Promise(resolver)
 
     var self = this
     self.callbacks = []
@@ -18,7 +18,7 @@ var Promise = (function() {
         self.data = value
 
         for (var i = 0; i < self.callbacks.length; i++) {
-          self.callbacks[i].resolver(value)
+          self.callbacks[i].onResolved(value)
         }
       })
     }
@@ -32,13 +32,13 @@ var Promise = (function() {
         self.data = reason
 
         for (var i = 0; i < self.callbacks.length; i++) {
-          self.callbacks[i].rejector(reason)
+          self.callbacks[i].onRejected(reason)
         }
       })
     }
 
     try{
-      callback(resolve, reject)
+      resolver(resolve, reject)
     } catch(e) {
       reject(e)
     }
@@ -87,11 +87,9 @@ var Promise = (function() {
     }
   }
 
-  Promise.prototype.isPromise = true
-
-  Promise.prototype.then = function(resolver, rejector) {
-    resolver = typeof resolver === 'function' ? resolver : function(v){return v}
-    rejector = typeof rejector === 'function' ? rejector : function(r){throw r}
+  Promise.prototype.then = function(onResolved, onRejected) {
+    onResolved = typeof onResolved === 'function' ? onResolved : function(v){return v}
+    onRejected = typeof onRejected === 'function' ? onRejected : function(r){throw r}
     var self = this
     var promise2
 
@@ -99,7 +97,7 @@ var Promise = (function() {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
-            var value = resolver(self.data)
+            var value = onResolved(self.data)
             resolvePromise(promise2, value, resolve, reject)
           } catch(e) {
             return reject(e)
@@ -112,7 +110,7 @@ var Promise = (function() {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
-            var value = rejector(self.data)
+            var value = onRejected(self.data)
             resolvePromise(promise2, value, resolve, reject)
           } catch(e) {
             return reject(e)
@@ -124,17 +122,17 @@ var Promise = (function() {
     if (self.status == 'pending') {
       return promise2 = new Promise(function(resolve, reject) {
         self.callbacks.push({
-          resolver: function(value) {
+          onResolved: function(value) {
             try {
-              var value = resolver(value)
+              var value = onResolved(value)
               resolvePromise(promise2, value, resolve, reject)
             } catch(e) {
               return reject(e)
             }
           },
-          rejector: function(reason) {
+          onRejected: function(reason) {
             try {
-              var value = rejector(reason)
+              var value = onRejected(reason)
               resolvePromise(promise2, value, resolve, reject)
             } catch(e) {
               return reject(e)
@@ -215,7 +213,7 @@ var Promise = (function() {
       for (var i = 0; i < promises.length; i++) {
         Promise.resolve(promises[i]).then(function(value) {
           return resolve(value);
-        }, function(reason){
+        }, function(reason) {
           return reject(reason)
         });
       }
@@ -237,7 +235,7 @@ var Promise = (function() {
   }
 
   Promise.fcall = function(fn){
-    //虽然fn可以接收到上一层then里传来的参数，但是其实是undefined，所以跟没有是一样的，因为resolve没参数啊
+    // 虽然fn可以接收到上一层then里传来的参数，但是其实是undefined，所以跟没有是一样的，因为resolve没参数啊
     return Promise.resolve().then(fn)
   }
 
