@@ -44,30 +44,64 @@ var Promise = (function() {
     }
   }
 
-  function noop(){}
+  function resolvePromise(promise, x, resolve, reject) {
+    var then
+    var rsCalled = false
+    var rjCalled = false
+
+    if (promise === x) {
+      return reject(new TypeError('Chaining cycle detected for promise!'))
+    }
+
+    if (x instanceof Promise) {
+      return x.then(resolve, reject)
+    }
+
+    if ((x !== null) && ((typeof x === 'object') || (typeof x === 'function'))) {
+      try {
+        then = x.then
+      } catch(e) {
+        return reject(e)
+      }
+      if (typeof then === 'function') {
+        try {
+          then.call(x, function rs(y) {
+            if (rsCalled || rjCalled) return
+            rsCalled = true
+            return resolvePromise(promise, y, resolve, reject)
+          }, function rj(r) {
+            if (rsCalled || rjCalled) return
+            rjCalled = true
+            return reject(r)
+          })
+        } catch(e) {
+          if (rsCalled || rjCalled) return
+          rsCalled = rjCalled = true
+          return reject(e)
+        }
+      } else {
+        return resolve(x)
+      }
+    } else {
+      return resolve(x)
+    }
+  }
 
   Promise.prototype.isPromise = true
 
   Promise.prototype.then = function(resolver, rejector) {
     resolver = typeof resolver === 'function' ? resolver : function(v){return v}
     rejector = typeof rejector === 'function' ? rejector : function(r){throw r}
-    var self = this;
-    var promise2;
+    var self = this
+    var promise2
 
     if (self.status == 'resolved') {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
             var value = resolver(self.data)
-            if (promise2 === value) {
-              return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
-            } else if (value && value.isPromise) {
-              return value.then(resolve, reject)
-            } else {
-              return resolve(value)
-            }
+            resolvePromise(promise2, value, resolve, reject)
           } catch(e) {
-            //console.error('catch',e)
             return reject(e)
           }
         })
@@ -79,15 +113,8 @@ var Promise = (function() {
         setTimeout(function() {
           try {
             var value = rejector(self.data)
-            if (promise2 === value) {
-              return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
-            } else if (value && value.isPromise) {
-              return value.then(resolve, reject)
-            } else {
-              return resolve(value)
-            }
+            resolvePromise(promise2, value, resolve, reject)
           } catch(e) {
-            //console.error('catch',e)
             return reject(e)
           }
         })
@@ -100,30 +127,16 @@ var Promise = (function() {
           resolver: function(value) {
             try {
               var value = resolver(value)
-              if (promise2 === value) {
-                return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
-              } else if (value && value.isPromise) {
-                return value.then(resolve, reject)
-              } else {
-                return resolve(value)
-              }
+              resolvePromise(promise2, value, resolve, reject)
             } catch(e) {
-              //console.error('catch',e)
               return reject(e)
             }
           },
           rejector: function(reason) {
             try {
               var value = rejector(reason)
-              if (promise2 === value) {
-                return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
-              } else if (value && value.isPromise) {
-                return value.then(resolve, reject)
-              } else {
-                return resolve(value)
-              }
+              resolvePromise(promise2, value, resolve, reject)
             } catch(e) {
-              //console.error('catch',e)
               return reject(e)
             }
           }
