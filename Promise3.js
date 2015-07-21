@@ -148,8 +148,8 @@ var Promise = (function() {
   }
 
   Promise.prototype.catch = function(onRejected) {
-    return this.then(null, onRejected);
-  };
+    return this.then(null, onRejected)
+  }
 
   Promise.prototype.finally = function(fn) {
     // 为什么这里可以呢，因为所有的then调用是一起的，但是这个then里调用fn又异步了一次，所以它总是最后调用的。
@@ -189,36 +189,36 @@ var Promise = (function() {
 
   Promise.all = function(promises) {
     return new Promise(function(resolve, reject) {
-      var resolvedCounter = 0;
-      var promiseNum = promises.length;
-      var resolvedValues = new Array(promiseNum);
+      var resolvedCounter = 0
+      var promiseNum = promises.length
+      var resolvedValues = new Array(promiseNum)
       for (var i = 0; i < promiseNum; i++) {
         (function(i) {
           Promise.resolve(promises[i]).then(function(value) {
-            resolvedCounter++;
-            resolvedValues[i] = value;
+            resolvedCounter++
+            resolvedValues[i] = value
             if (resolvedCounter == promiseNum) {
-              return resolve(resolvedValues);
+              return resolve(resolvedValues)
             }
           }, function(reason) {
             return reject(reason)
-          });
-        })(i);
+          })
+        })(i)
       }
-    });
-  };
+    })
+  }
 
   Promise.race = function(promises) {
     return new Promise(function(resolve, reject) {
       for (var i = 0; i < promises.length; i++) {
         Promise.resolve(promises[i]).then(function(value) {
-          return resolve(value);
+          return resolve(value)
         }, function(reason) {
           return reject(reason)
-        });
+        })
       }
-    });
-  };
+    })
+  }
 
   Promise.resolve = function(value) {
     if (value instanceof Promise) return value
@@ -256,5 +256,5 @@ var Promise = (function() {
     module.exports = Promise
   } catch(e) {}
 
-  return Promise;
+  return Promise
 })()
