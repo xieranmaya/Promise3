@@ -143,6 +143,7 @@ var Promise = (function() {
   Promise.prototype.finally = function(fn) {
     // 为什么这里可以呢，因为所有的then调用是一起的，但是这个then里调用fn又异步了一次，所以它总是最后调用的。
     // 当然这里只能保证在已添加的函数里是最后一次，不过这也是必然。
+    // 不过看起来比其它的实现要简单以及容易理解的多
     function finFn(){
       setTimeout(fn)
     }
@@ -150,10 +151,10 @@ var Promise = (function() {
     return this
   }
 
-  Promise.prototype.spread = function(fn) {
+  Promise.prototype.spread = function(fn, onRejected) {
     return this.then(function(values) {
       return fn.apply(null, values)
-    })
+    }, onRejected)
   }
 
   Promise.prototype.delay = function(duration) {
@@ -179,7 +180,7 @@ var Promise = (function() {
       var resolvedValues = new Array(promiseNum);
       for (var i = 0; i < promiseNum; i++) {
         (function(i) {
-          promises[i].then(function(value) {
+          Promise.resolve(promises[i]).then(function(value) {
             resolvedCounter++;
             resolvedValues[i] = value;
             if (resolvedCounter == promiseNum) {
@@ -196,7 +197,7 @@ var Promise = (function() {
   Promise.race = function(promises) {
     return new Promise(function(resolve, reject) {
       for (var i = 0; i < promises.length; i++) {
-        promises[i].then(function(value) {
+        Promise.resolve(promises[i]).then(function(value) {
           return resolve(value);
         }, function(reason){
           return reject(reason)
@@ -206,22 +207,25 @@ var Promise = (function() {
   };
 
   Promise.resolve = function(value) {
+    if (value instanceof Promise) return value
     return new Promise(function(resolve) {
       resolve(value)
     })
   }
 
   Promise.reject = function(reason) {
+    if (reason instanceof Promise) return reason
     return new Promise(function(resolve, reject) {
       reject(reason)
     })
   }
 
   Promise.fcall = function(fn){
+    //虽然fn可以接收到上一层then里传来的参数，但是其实是undefined，所以跟没有是一样的，因为resolve没参数啊
     return Promise.resolve().then(fn)
   }
 
-  Promise.done = function(){
+  Promise.done = Promise.stop = function(){
     return new Promise(function(){})
   }
 
@@ -234,11 +238,9 @@ var Promise = (function() {
     return dfd
   }
 
-  try {
+  try { // CommonJS compliance
     module.exports = Promise
-  } catch(e) {
-
-  }
+  } catch(e) {}
 
   return Promise;
 })()
