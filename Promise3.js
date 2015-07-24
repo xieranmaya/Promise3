@@ -10,7 +10,10 @@ var Promise = (function() {
     self.status = 'pending'
 
     function resolve(value) {
-      setTimeout(function(){
+      if (value instanceof Promise) {
+        return value.then(resolve, reject)
+      }
+      setTimeout(function() {
         if (self.status != 'pending') {
           return
         }
@@ -46,41 +49,43 @@ var Promise = (function() {
 
   function resolvePromise(promise, x, resolve, reject) {
     var then
-    var rsCalled = false
-    var rjCalled = false
+    var thenCalledOrThrow = false
 
     if (promise === x) {
       return reject(new TypeError('Chaining cycle detected for promise!'))
     }
 
     if (x instanceof Promise) {
-      return x.then(resolve, reject)
+      if (x.status === 'pending') {
+        x.then(function (val) {
+          resolvePromise(promise, val, resolve, reject);
+        }, reject);
+      } else {
+        x.then(resolve, reject)
+      }
+      return
     }
 
     if ((x !== null) && ((typeof x === 'object') || (typeof x === 'function'))) {
       try {
         then = x.then
-      } catch(e) {
-        return reject(e)
-      }
-      if (typeof then === 'function') {
-        try {
+        if (typeof then === 'function') {
           then.call(x, function rs(y) {
-            if (rsCalled || rjCalled) return
-            rsCalled = true
+            if (thenCalledOrThrow) return
+            thenCalledOrThrow = true
             return resolvePromise(promise, y, resolve, reject)
           }, function rj(r) {
-            if (rsCalled || rjCalled) return
-            rjCalled = true
+            if (thenCalledOrThrow) return
+            thenCalledOrThrow = true
             return reject(r)
           })
-        } catch(e) {
-          if (rsCalled || rjCalled) return
-          rsCalled = rjCalled = true
-          return reject(e)
+        } else {
+          return resolve(x)
         }
-      } else {
-        return resolve(x)
+      } catch(e) {
+        if (thenCalledOrThrow) return
+        thenCalledOrThrow = true
+        return reject(e)
       }
     } else {
       return resolve(x)
@@ -221,14 +226,12 @@ var Promise = (function() {
   }
 
   Promise.resolve = function(value) {
-    if (value instanceof Promise) return value
     return new Promise(function(resolve) {
       resolve(value)
     })
   }
 
   Promise.reject = function(reason) {
-    if (reason instanceof Promise) return reason
     return new Promise(function(resolve, reject) {
       reject(reason)
     })
