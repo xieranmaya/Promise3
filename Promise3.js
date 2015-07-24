@@ -1,6 +1,6 @@
 var Promise = (function() {
   function Promise(resolver) {
-    if (typeof resolver != 'function') {
+    if (typeof resolver !== 'function') {
       throw new TypeError('Promise resolver ' + resolver + ' is not a function')
     }
     if (!(this instanceof Promise)) return new Promise(resolver)
@@ -14,7 +14,7 @@ var Promise = (function() {
         return value.then(resolve, reject)
       }
       setTimeout(function() {
-        if (self.status != 'pending') {
+        if (self.status !== 'pending') {
           return
         }
         self.status = 'resolved'
@@ -28,7 +28,7 @@ var Promise = (function() {
 
     function reject(reason) {
       setTimeout(function(){
-        if (self.status != 'pending') {
+        if (self.status !== 'pending') {
           return
         }
         self.status = 'rejected'
@@ -57,8 +57,8 @@ var Promise = (function() {
 
     if (x instanceof Promise) {
       if (x.status === 'pending') {
-        x.then(function (val) {
-          resolvePromise(promise, val, resolve, reject);
+        x.then(function(v) {
+          resolvePromise(promise, v, resolve, reject);
         }, reject);
       } else {
         x.then(resolve, reject)
@@ -98,7 +98,7 @@ var Promise = (function() {
     var self = this
     var promise2
 
-    if (self.status == 'resolved') {
+    if (self.status === 'resolved') {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
@@ -111,7 +111,7 @@ var Promise = (function() {
       })
     }
 
-    if (self.status == 'rejected') {
+    if (self.status === 'rejected') {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
@@ -124,7 +124,7 @@ var Promise = (function() {
       })
     }
 
-    if (self.status == 'pending') {
+    if (self.status === 'pending') {
       return promise2 = new Promise(function(resolve, reject) {
         self.callbacks.push({
           onResolved: function(value) {
