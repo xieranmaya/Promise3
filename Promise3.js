@@ -176,6 +176,14 @@ var Promise = (function() {
     }, onRejected)
   }
 
+  Promise.prototype.inject = function(fn, onRejected) {
+    return this.then(function(v) {
+      return fn.apply(null, fn.toString().match(/\((.*?)\)/)[1].split(',').map(function(key){
+        return v[key];
+      }))
+    }, onRejected)
+  }
+
   Promise.prototype.delay = function(duration) {
     return this.then(function(value) {
       return new Promise(function(resolve, reject) {
