@@ -220,9 +220,10 @@ var Promise = (function() {
   }
 
   Promise.resolve = function(value) {
-    return new Promise(function(resolve) {
-      resolve(value)
+    var promise = new Promise(function(resolve, reject) {
+      resolvePromise(promise, value, resolve, reject)
     })
+    return promise
   }
 
   Promise.reject = function(reason) {
