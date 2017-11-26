@@ -10,9 +10,6 @@ var Promise = (function() {
     self.status = 'pending'
 
     function resolve(value) {
-      if (value instanceof Promise) {
-        return value.then(resolve, reject)
-      }
       setTimeout(function() {
         if (self.status !== 'pending') {
           return
@@ -55,17 +52,6 @@ var Promise = (function() {
       return reject(new TypeError('Chaining cycle detected for promise!'))
     }
 
-    if (x instanceof Promise) {
-      if (x.status === 'pending') {
-        x.then(function(v) {
-          resolvePromise(promise, v, resolve, reject);
-        }, reject);
-      } else {
-        x.then(resolve, reject)
-      }
-      return
-    }
-
     if ((x !== null) && ((typeof x === 'object') || (typeof x === 'function'))) {
       try {
         then = x.then
@@ -102,8 +88,8 @@ var Promise = (function() {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
-            var value = onResolved(self.data)
-            resolvePromise(promise2, value, resolve, reject)
+            var x = onResolved(self.data)
+            resolvePromise(promise2, x, resolve, reject)
           } catch(e) {
             return reject(e)
           }
@@ -115,8 +101,8 @@ var Promise = (function() {
       return promise2 = new Promise(function(resolve, reject) {
         setTimeout(function() {
           try {
-            var value = onRejected(self.data)
-            resolvePromise(promise2, value, resolve, reject)
+            var x = onRejected(self.data)
+            resolvePromise(promise2, x, resolve, reject)
           } catch(e) {
             return reject(e)
           }
@@ -129,16 +115,16 @@ var Promise = (function() {
         self.callbacks.push({
           onResolved: function(value) {
             try {
-              var value = onResolved(value)
-              resolvePromise(promise2, value, resolve, reject)
+              var x = onResolved(value)
+              resolvePromise(promise2, x, resolve, reject)
             } catch(e) {
               return reject(e)
             }
           },
           onRejected: function(reason) {
             try {
-              var value = onRejected(reason)
-              resolvePromise(promise2, value, resolve, reject)
+              var x = onRejected(reason)
+              resolvePromise(promise2, x, resolve, reject)
             } catch(e) {
               return reject(e)
             }
