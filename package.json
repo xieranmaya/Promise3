@@ -1,0 +1,23 @@
+{
+  "name": "promise",
+  "version": "1.0.0",
+  "description": "Learning Promise by actually implementing it.",
+  "main": "index.js",
+  "scripts": {
+    "test": "promises-aplus-tests src/promise.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nzhl/promise.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nzhl/promise/issues"
+  },
+  "homepage": "https://github.com/nzhl/promise#readme",
+  "dependencies": {
+    "promises-aplus-tests": "^2.1.2"
+  }
+}
