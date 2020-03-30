@@ -220,6 +220,9 @@ var Promise = (function() {
   }
 
   Promise.resolve = function(value) {
+    if (value instanceof Promise) {
+      return value
+    }
     var promise = new Promise(function(resolve, reject) {
       resolvePromise(promise, value, resolve, reject)
     })
